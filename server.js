@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
+const mongoose = require('mongoose');
 const router = require('./routes/routes');
 const fccTestingRoutes = require('./routes/fcctesting.js');
 const runner = require('./test-runner');
@@ -39,6 +40,12 @@ app.use(function(req, res, next) {
 
 // Start our server and tests!
 app.listen(process.env.PORT || 3000, function() {
+  mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+  });
+  console.log('Database Connected');
   console.log(`Listening on port ${process.env.PORT}`);
   if (process.env.NODE_ENV === 'test') {
     console.log('Running Tests...');

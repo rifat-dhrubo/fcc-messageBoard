@@ -1,4 +1,5 @@
 const Board = require('../Models/Board');
+const Thread = require('../Models/Thread');
 const Reply = require('../Models/Reply');
 const { asyncHandler } = require('../utils/handler');
 
@@ -24,13 +25,63 @@ const createReply = async (req, res, next) => {
   );
   if (replyErr || boardErr) {
     res.json({ ...replyErr, ...boardErr });
-    return
+    return;
   }
 
   res.json(replyData);
 };
-const deleteReply = async (req, res) => {};
-const reportReply = async (req, res) => {};
-const getReplies = async (req, res) => {};
+const deleteReply = async (req, res) => {
+  // eslint-disable-next-line camelcase
+  const { thread_id, reply_id, delete_password } = req.body;
 
-module.exports = { getReplies, createReply, reportReply, deleteReply };
+  const deleteFromReply = asyncHandler(
+    Reply.findOneAndDelete({
+      _id: reply_id,
+      thread: thread_id,
+      delete_password,
+    })
+      .lean()
+      .exec()
+  );
+
+  const deleteFromThread = asyncHandler(
+    Thread.findOneAndUpdate(
+      { _id: thread_id },
+      { $pull: { replies: reply_id } }
+    )
+      .lean()
+      .exec()
+  );
+
+  const [err, data] = await asyncHandler(
+    Promise.all([deleteFromReply, deleteFromThread])
+  );
+
+  if (err === null) {
+    res.send('success');
+  } else {
+    res.json(err);
+  }
+};
+const reportReply = async (req, res) => {
+  // eslint-disable-next-line camelcase
+  const { thread_id, reply_id } = req.body;
+
+  const [err, data] = await asyncHandler(
+    Reply.findOneAndUpdate(
+      { _id: reply_id, thread: thread_id },
+      { reported: true },
+      { new: true }
+    )
+      .lean()
+      .exec()
+  );
+
+  if (err === null) {
+    res.send('success');
+  } else {
+    res.json(err);
+  }
+};
+
+module.exports = { createReply, reportReply, deleteReply };

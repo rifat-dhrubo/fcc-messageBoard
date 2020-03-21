@@ -1,4 +1,5 @@
 const Board = require('../Models/Board');
+const Reply = require('../Models/Reply');
 const Thread = require('../Models/Thread');
 const { asyncHandler } = require('../utils/handler');
 
@@ -31,8 +32,7 @@ const createThread = async (req, res, next) => {
 
   res.json(threadData);
 };
-const deleteThread = async (req, res) => {};
-const reportThread = async (req, res) => {};
+
 const getThreads = async (req, res, next) => {
   const { board: title } = req.params;
 
@@ -81,6 +81,63 @@ const getOneThread = async (req, res) => {
     err,
     data,
   });
+};
+
+const reportThread = async (req, res) => {
+  // eslint-disable-next-line camelcase
+  const { thread_id } = req.body;
+
+  const [err, data] = await asyncHandler(
+    Thread.findByIdAndUpdate(thread_id, { reported: true }, { new: true })
+      .lean()
+      .exec()
+  );
+
+  if (err === null) {
+    res.send('success');
+  } else {
+    res.json(err);
+  }
+};
+const deleteThread = async (req, res) => {
+  // eslint-disable-next-line camelcase
+  const { thread_id, delete_password } = req.body;
+
+  const [errThread, dataThread] = await asyncHandler(
+    Thread.findOneAndDelete({
+      _id: thread_id,
+      delete_password,
+    })
+      .lean()
+      .exec()
+  );
+
+  if (errThread === null && dataThread === null) {
+    res.send('thread does not exist or incorrect password');
+    return;
+  }
+
+  const repliesToDelete = [];
+  console.log(dataThread.replies);
+  if (Object.prototype.hasOwnProperty.call(dataThread, 'replies')) {
+    const { replies } = dataThread;
+    repliesToDelete.push(...replies);
+  }
+
+  const [errReply, dataReply] = await asyncHandler(
+    Reply.deleteMany({ _id: { $in: [...repliesToDelete] } })
+      .lean()
+      .exec()
+  );
+
+  console.error(`replies ${errReply}`);
+  console.log(dataReply);
+
+  if (errReply === null && dataReply.ok) {
+    res.send('success');
+  } else {
+    res.json(errReply);
+  }
 };
 
 module.exports = {

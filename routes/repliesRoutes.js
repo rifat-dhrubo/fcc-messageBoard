@@ -1,6 +1,5 @@
 const express = require('express');
 const {
-  getReplies,
   createReply,
   reportReply,
   deleteReply,
@@ -8,7 +7,6 @@ const {
 
 const router = express.Router();
 
-router.get('/:board', getReplies);
 router.post('/:board', createReply);
 router.put('/:board', reportReply);
 router.delete('/:board', deleteReply);

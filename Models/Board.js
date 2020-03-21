@@ -1,12 +1,11 @@
 const mongoose = require('mongoose');
-const Thread = require('./Thread');
 
 const boardSchema = new mongoose.Schema({
-  title: String,
-  threads: {
-    type: [mongoose.SchemaTypes.ObjectId],
-    ref: Thread,
+  title: {
+    type: String,
+    required: 'A board must have a title',
   },
+  threads: [{ type: mongoose.Schema.ObjectId, ref: 'Thread' }],
 });
 
 module.exports = mongoose.model('Board', boardSchema);

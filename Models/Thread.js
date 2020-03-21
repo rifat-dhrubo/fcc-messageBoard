@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const Board = require('./Board');
 const Reply = require('./Reply');
 
 const threadSchema = new mongoose.Schema(
@@ -16,6 +15,7 @@ const threadSchema = new mongoose.Schema(
     reported: {
       type: Boolean,
       default: false,
+      required: true,
     },
     delete_password: {
       type: String,
@@ -33,14 +33,4 @@ const threadSchema = new mongoose.Schema(
   }
 );
 
-threadSchema.pre('save', async function(next) {
-  if (!this.isModified('board')) {
-    next();
-  }
-  await Board.findByIdAndUpdate(
-    this.board,
-    { $addToSet: { threads: this._id } },
-    { upsert: true }
-  );
-});
 module.exports = mongoose.model('Thread', threadSchema);

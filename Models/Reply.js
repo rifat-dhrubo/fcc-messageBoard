@@ -31,15 +31,14 @@ const replySchema = new mongoose.Schema(
   }
 );
 
-replySchema.pre('save', async function(next) {
-  if (!this.isModified('thread')) {
-    next();
-  }
+replySchema.post('save', async function() {
+  console.log(`On reply pre ${this}`);
   await Thread.findByIdAndUpdate(
-    this.Thread,
+    this.thread,
     { $addToSet: { replies: this._id } },
     { upsert: true }
   );
+  console.log('done');
 });
 
 module.exports = mongoose.model('Reply', replySchema);

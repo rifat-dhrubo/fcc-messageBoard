@@ -2,7 +2,7 @@ const express = require('express');
 
 const repliesRouter = require('./repliesRoutes');
 const threadsRouter = require('./threadsRoutes');
-const boardsRouter = require('./borardsRouter');
+const boardsRouter = require('./boardsRouter');
 
 const router = express.Router();
 

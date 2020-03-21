@@ -22,10 +22,9 @@ const createReply = async (req, res, next) => {
       reported,
     })
   );
-  console.log(replyErr);
   if (replyErr || boardErr) {
-    res.json({ replyErr, boardErr });
-    return;
+    res.json({ ...replyErr, ...boardErr });
+    return
   }
 
   res.json(replyData);
